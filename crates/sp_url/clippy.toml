@@ -3,8 +3,9 @@
 # clippy reads the clippy.toml next to the crate's Cargo.toml, so this only
 # applies to the crates that carry a copy of it. the root clippy.toml is empty
 # so no config from outside the repo applies to the other crates.
-# disallowed-types only sees types written out, so every std function that
-# returns one of these types is listed in disallowed-methods too.
+# disallowed-types only sees types written out, not inferred ones, so the std
+# functions that open or create these from a path, address or program name are
+# listed in disallowed-methods too.
 # std::os::unix and std::os::windows only exist on their own targets, so those
 # entries carry allow-invalid to keep the config valid on the other one.
 
