@@ -26,6 +26,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: install toolchain from rust-toolchain.toml
         run: rustup toolchain install
+      # mesa's lavapipe gives linux runners a vulkan adapter, so the
+      # compositor's offscreen render test runs instead of skipping.
+      - name: install mesa lavapipe
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y mesa-vulkan-drivers
       - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@v2
         with:

@@ -9,3 +9,8 @@ publish.workspace = true
 # inherit the workspace unsafe_code = "forbid".
 [lints.rust]
 unsafe_code = "allow"
+
+[dependencies]
+sp_paint.workspace = true
+vello.workspace = true
+skrifa.workspace = true

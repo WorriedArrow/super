@@ -10,6 +10,17 @@ publish = false
 
 [workspace.dependencies]
 clap = { version = "4", features = ["derive"] }
+fontique = { version = "0.13", features = ["fontconfig-dlopen"] }
+harfrust = "0.15"
+postcard = { version = "1", default-features = false, features = ["alloc"] }
+serde = { version = "1", features = ["derive"] }
+skrifa = "0.49"
+vello = "0.12"
+# wayland-csd-adwaita is left out: it pulls in ttf-parser, which is
+# unmaintained (RUSTSEC-2026-0192). wayland windows get sctk's fallback frame.
+winit = { version = "0.30", default-features = false, features = ["rwh_06", "x11", "wayland", "wayland-dlopen"] }
+sp_compositor = { path = "crates/sp_compositor" }
+sp_paint = { path = "crates/sp_paint" }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

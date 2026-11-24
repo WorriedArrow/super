@@ -7,3 +7,10 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+fontique.workspace = true
+harfrust.workspace = true
+sp_compositor.workspace = true
+sp_paint.workspace = true
+winit.workspace = true
