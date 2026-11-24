@@ -9,6 +9,7 @@ use crate::atom::{Atom, ns};
 use crate::document::Document;
 use crate::node::{Attribute, NodeId};
 use crate::tree::{DomException, DomResult};
+use crate::wtf8::{Wtf8, Wtf8Buf};
 
 fn is_ascii_whitespace(c: char) -> bool {
     matches!(c, '\t' | '\n' | '\x0C' | '\r' | ' ')
@@ -131,7 +132,7 @@ impl Document {
         _element: NodeId,
         _local_name: Atom,
         _namespace: Option<Atom>,
-        _old_value: Option<&str>,
+        _old_value: Option<Wtf8<'_>>,
     ) {
         // step 1: queue a mutation record (mutation observers).
         // step 2: attributeChangedCallback (custom elements).
@@ -139,13 +140,13 @@ impl Document {
     }
 
     /// https://dom.spec.whatwg.org/#concept-element-attributes-change
-    pub fn change_attribute(&mut self, element: NodeId, index: usize, value: impl Into<String>) {
+    pub fn change_attribute(&mut self, element: NodeId, index: usize, value: impl Into<Wtf8Buf>) {
         let attribute = &mut self.element_mut(element).attributes[index];
         // step 1-2
         let old_value = std::mem::replace(&mut attribute.value, value.into());
         let (local_name, namespace) = (attribute.local_name, attribute.namespace);
         // step 3
-        self.handle_attribute_changes(element, local_name, namespace, Some(&old_value));
+        self.handle_attribute_changes(element, local_name, namespace, Some(old_value.as_wtf8()));
     }
 
     /// https://dom.spec.whatwg.org/#concept-element-attributes-append
@@ -167,7 +168,7 @@ impl Document {
             element,
             removed.local_name,
             removed.namespace,
-            Some(&removed.value),
+            Some(removed.value.as_wtf8()),
         );
         removed
     }
@@ -186,7 +187,12 @@ impl Document {
             new_attribute,
         );
         // step 5
-        self.handle_attribute_changes(element, old.local_name, old.namespace, Some(&old.value));
+        self.handle_attribute_changes(
+            element,
+            old.local_name,
+            old.namespace,
+            Some(old.value.as_wtf8()),
+        );
         old
     }
 
@@ -236,11 +242,11 @@ impl Document {
         element: NodeId,
         local_name: Atom,
         namespace: Option<Atom>,
-    ) -> &str {
+    ) -> Wtf8<'_> {
         // step 1-3
         match self.get_attribute_by_namespace(element, namespace, local_name) {
-            Some(i) => &self.attributes(element)[i].value,
-            None => "",
+            Some(i) => self.attributes(element)[i].value.as_wtf8(),
+            None => Wtf8::default(),
         }
     }
 
@@ -249,7 +255,7 @@ impl Document {
         &mut self,
         element: NodeId,
         local_name: Atom,
-        value: impl Into<String>,
+        value: impl Into<Wtf8Buf>,
         prefix: Option<Atom>,
         namespace: Option<Atom>,
     ) {
@@ -298,7 +304,7 @@ impl Document {
         &mut self,
         element: NodeId,
         qualified_name: &str,
-        value: impl Into<String>,
+        value: impl Into<Wtf8Buf>,
     ) -> DomResult<()> {
         // step 1
         if !is_valid_attribute_local_name(qualified_name) {
@@ -329,7 +335,7 @@ impl Document {
         element: NodeId,
         namespace: Option<&str>,
         qualified_name: &str,
-        value: impl Into<String>,
+        value: impl Into<Wtf8Buf>,
     ) -> DomResult<()> {
         // step 1
         let (namespace, prefix, local_name) =

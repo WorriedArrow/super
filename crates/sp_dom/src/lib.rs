@@ -7,6 +7,7 @@ mod clone;
 mod document;
 mod node;
 mod tree;
+mod wtf8;
 
 pub use atom::{Atom, atoms, ns};
 pub use attr::{
@@ -18,6 +19,7 @@ pub use node::{
     Attribute, Doctype, DocumentData, DocumentKind, Element, Node, NodeData, NodeId, QuirksMode,
 };
 pub use tree::{DomException, DomResult};
+pub use wtf8::{CodePoints, Wtf8, Wtf8Buf};
 
 #[cfg(test)]
 mod tests;

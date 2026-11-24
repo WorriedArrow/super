@@ -347,7 +347,10 @@ fn adopt_within_and_across_arenas() {
     assert!(other.get(text).is_none());
     assert_eq!(other.children(parent).count(), 0);
     assert_eq!(doc.node(moved).node_document(), root);
-    assert_eq!(doc.element(moved).unwrap().attribute(atoms::ID), Some("t"));
+    assert_eq!(
+        doc.element(moved).unwrap().attribute(atoms::ID).unwrap(),
+        "t"
+    );
     assert_eq!(doc.child_text_content(moved), "x");
     let new_contents = doc.template_contents(moved).unwrap();
     assert_eq!(doc.node(new_contents).node_document(), inert);
@@ -411,8 +414,11 @@ fn clone_shallow_deep_and_across_arenas() {
     let shallow = doc.clone_node(div, root, false).unwrap();
     assert_eq!(doc.children(shallow).count(), 0);
     assert_eq!(
-        doc.element(shallow).unwrap().attribute(atoms::CLASS),
-        Some("x")
+        doc.element(shallow)
+            .unwrap()
+            .attribute(atoms::CLASS)
+            .unwrap(),
+        "x"
     );
     assert_eq!(doc.parent(shallow), None);
 
@@ -472,7 +478,7 @@ fn attributes() {
     let (mut doc, root) = html_doc();
     let div = el(&mut doc, "div");
     doc.set_attribute(div, "ID", "a").unwrap();
-    assert_eq!(doc.element(div).unwrap().attribute(atoms::ID), Some("a"));
+    assert_eq!(doc.element(div).unwrap().attribute(atoms::ID).unwrap(), "a");
     doc.set_attribute(div, "id", "b").unwrap();
     assert_eq!(doc.element(div).unwrap().attributes().len(), 1);
     assert_eq!(doc.get_attribute_value(div, atoms::ID, None), "b");
@@ -498,8 +504,8 @@ fn attributes() {
     // the null-namespace href is a separate attribute.
     doc.set_attribute_value(div, atoms::HREF, "plain", None, None);
     assert_eq!(
-        doc.element(div).unwrap().attribute(atoms::HREF),
-        Some("plain")
+        doc.element(div).unwrap().attribute(atoms::HREF).unwrap(),
+        "plain"
     );
 
     let removed = doc
@@ -510,10 +516,16 @@ fn attributes() {
     assert!(doc.remove_attribute_by_name(div, "id").is_none());
     let old = doc.replace_attribute(div, 0, Attribute::new(atoms::CLASS, "c"));
     assert_eq!(old.local_name, atoms::HREF);
-    assert_eq!(doc.element(div).unwrap().attribute(atoms::CLASS), Some("c"));
+    assert_eq!(
+        doc.element(div).unwrap().attribute(atoms::CLASS).unwrap(),
+        "c"
+    );
     doc.append_attribute(div, Attribute::new(atoms::TITLE, "t"));
     doc.change_attribute(div, 1, "u");
-    assert_eq!(doc.element(div).unwrap().attribute(atoms::TITLE), Some("u"));
+    assert_eq!(
+        doc.element(div).unwrap().attribute(atoms::TITLE).unwrap(),
+        "u"
+    );
     assert_eq!(doc.remove_attribute(div, 0).local_name, atoms::CLASS);
 
     // no lowercasing outside the html namespace or in xml documents.
@@ -599,12 +611,40 @@ fn character_data() {
     let (mut doc, root) = html_doc();
     let t = doc.create_text(root, "a");
     doc.append_data(t, "bc");
-    assert_eq!(doc.node(t).character_data(), Some("abc"));
+    assert_eq!(doc.node(t).character_data().unwrap(), "abc");
     doc.set_data(t, "x");
-    assert_eq!(doc.node(t).character_data(), Some("x"));
+    assert_eq!(doc.node(t).character_data().unwrap(), "x");
     let pi = doc.create_processing_instruction(root, "xml-stylesheet", "d");
     doc.append_data(pi, "e");
-    assert_eq!(doc.node(pi).character_data(), Some("de"));
+    assert_eq!(doc.node(pi).character_data().unwrap(), "de");
+}
+
+#[test]
+fn lone_surrogates_survive_in_text_and_attributes() {
+    let (mut doc, root) = html_doc();
+    let p = el(&mut doc, "p");
+    let high = Wtf8Buf::from_utf16(&[0x61, 0xD83D]);
+    let low = Wtf8Buf::from_utf16(&[0xDE00, 0x62]);
+    let t1 = doc.create_text(root, high.clone());
+    let t2 = doc.create_text(root, low.clone());
+    doc.append(t1, p).unwrap();
+    doc.append(t2, p).unwrap();
+    // each node keeps its lone surrogate.
+    assert_eq!(doc.node(t1).character_data(), Some(&high));
+    assert_eq!(doc.node(t2).character_data(), Some(&low));
+    // concatenated, the halves form one code point, as they do in utf-16.
+    assert_eq!(doc.child_text_content(p), "a\u{1F600}b");
+    doc.append_data(t1, &low);
+    assert_eq!(doc.node(t1).character_data().unwrap(), "a\u{1F600}b");
+
+    let lone = Wtf8Buf::from_utf16(&[0xDC00]);
+    doc.set_attribute(p, "title", lone.clone()).unwrap();
+    assert_eq!(doc.element(p).unwrap().attribute(atoms::TITLE), Some(&lone));
+    let value = doc.get_attribute_value(p, atoms::TITLE, None);
+    assert_eq!(value.to_string_lossy(), "\u{FFFD}");
+    let comment = doc.create_comment(root, lone.clone());
+    let copy = doc.clone_node(comment, root, false).unwrap();
+    assert_eq!(doc.node(copy).character_data(), Some(&lone));
 }
 
 #[test]

@@ -6,6 +6,7 @@ use crate::atom::{Atom, atoms, ns};
 use crate::node::{
     Doctype, DocumentData, DocumentKind, Element, Node, NodeData, NodeId, QuirksMode,
 };
+use crate::wtf8::{Wtf8, Wtf8Buf};
 
 struct Slot {
     generation: NonZeroU32,
@@ -223,15 +224,15 @@ impl Document {
         element
     }
 
-    pub fn create_text(&mut self, document: NodeId, data: impl Into<String>) -> NodeId {
+    pub fn create_text(&mut self, document: NodeId, data: impl Into<Wtf8Buf>) -> NodeId {
         self.alloc(document, NodeData::Text(data.into()))
     }
 
-    pub fn create_cdata_section(&mut self, document: NodeId, data: impl Into<String>) -> NodeId {
+    pub fn create_cdata_section(&mut self, document: NodeId, data: impl Into<Wtf8Buf>) -> NodeId {
         self.alloc(document, NodeData::CdataSection(data.into()))
     }
 
-    pub fn create_comment(&mut self, document: NodeId, data: impl Into<String>) -> NodeId {
+    pub fn create_comment(&mut self, document: NodeId, data: impl Into<Wtf8Buf>) -> NodeId {
         self.alloc(document, NodeData::Comment(data.into()))
     }
 
@@ -239,7 +240,7 @@ impl Document {
         &mut self,
         document: NodeId,
         target: impl Into<String>,
-        data: impl Into<String>,
+        data: impl Into<Wtf8Buf>,
     ) -> NodeId {
         self.alloc(
             document,
@@ -400,29 +401,29 @@ impl Document {
     }
 
     /// https://dom.spec.whatwg.org/#concept-descendant-text-content
-    pub fn descendant_text_content(&self, id: NodeId) -> String {
-        let mut out = String::new();
+    pub fn descendant_text_content(&self, id: NodeId) -> Wtf8Buf {
+        let mut out = Wtf8Buf::new();
         for d in self.descendants(id) {
             if let NodeData::Text(s) | NodeData::CdataSection(s) = &self.node(d).data {
-                out.push_str(s);
+                out.push_wtf8(s);
             }
         }
         out
     }
 
     /// https://dom.spec.whatwg.org/#concept-child-text-content
-    pub fn child_text_content(&self, id: NodeId) -> String {
-        let mut out = String::new();
+    pub fn child_text_content(&self, id: NodeId) -> Wtf8Buf {
+        let mut out = Wtf8Buf::new();
         for c in self.children(id) {
             if let NodeData::Text(s) | NodeData::CdataSection(s) = &self.node(c).data {
-                out.push_str(s);
+                out.push_wtf8(s);
             }
         }
         out
     }
 
     /// https://html.spec.whatwg.org/multipage/dom.html#document.title (getter)
-    pub fn title(&self) -> String {
+    pub fn title(&self) -> Wtf8Buf {
         let root_element = self.document_element();
         let svg_root = root_element.filter(|&e| {
             self.element(e)
@@ -445,21 +446,18 @@ impl Document {
             .map(|t| self.child_text_content(t))
             .unwrap_or_default();
         // step 3: strip and collapse ascii whitespace
-        strip_and_collapse_ascii_whitespace(&value)
+        strip_and_collapse_ascii_whitespace(value.as_wtf8())
     }
 }
 
 /// https://infra.spec.whatwg.org/#strip-and-collapse-ascii-whitespace
-fn strip_and_collapse_ascii_whitespace(s: &str) -> String {
-    let mut out = String::with_capacity(s.len());
-    for word in s.split(|c: char| c.is_ascii_whitespace()) {
-        if word.is_empty() {
-            continue;
-        }
+fn strip_and_collapse_ascii_whitespace(s: Wtf8<'_>) -> Wtf8Buf {
+    let mut out = Wtf8Buf::with_capacity(s.len());
+    for word in s.split_ascii_whitespace() {
         if !out.is_empty() {
             out.push(' ');
         }
-        out.push_str(word);
+        out.push_wtf8(word);
     }
     out
 }

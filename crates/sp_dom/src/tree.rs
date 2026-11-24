@@ -8,6 +8,7 @@ use std::fmt;
 
 use crate::document::Document;
 use crate::node::{NodeData, NodeId};
+use crate::wtf8::{Wtf8, Wtf8Buf};
 
 /// https://webidl.spec.whatwg.org/#idl-DOMException-error-names
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -453,7 +454,7 @@ impl Document {
 
     /// https://dom.spec.whatwg.org/#concept-cd-replace with offset 0 and
     /// count the whole length, as the data setter does.
-    pub fn set_data(&mut self, node: NodeId, data: impl Into<String>) {
+    pub fn set_data(&mut self, node: NodeId, data: impl Into<Wtf8Buf>) {
         if let Some(s) = self.character_data_mut(node) {
             *s = data.into();
         }
@@ -462,14 +463,14 @@ impl Document {
 
     /// https://dom.spec.whatwg.org/#concept-cd-append, which is replace data
     /// at offset length with count 0.
-    pub fn append_data(&mut self, node: NodeId, data: &str) {
+    pub fn append_data<'a>(&mut self, node: NodeId, data: impl Into<Wtf8<'a>>) {
         if let Some(s) = self.character_data_mut(node) {
-            s.push_str(data);
+            s.push_wtf8(data);
         }
         self.after_replace_data(node);
     }
 
-    fn character_data_mut(&mut self, node: NodeId) -> Option<&mut String> {
+    fn character_data_mut(&mut self, node: NodeId) -> Option<&mut Wtf8Buf> {
         match &mut self.node_mut(node).data {
             NodeData::Text(s) | NodeData::CdataSection(s) | NodeData::Comment(s) => Some(s),
             NodeData::ProcessingInstruction { data, .. } => Some(data),

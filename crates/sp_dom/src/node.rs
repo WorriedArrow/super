@@ -4,6 +4,7 @@ use std::borrow::Cow;
 use std::num::NonZeroU32;
 
 use crate::atom::{Atom, ns};
+use crate::wtf8::Wtf8Buf;
 
 /// a node in a `Document`'s arena. the generation makes ids of freed slots
 /// stale instead of silently pointing at whatever reuses the slot.
@@ -62,12 +63,12 @@ pub struct Attribute {
     pub namespace: Option<Atom>,
     pub prefix: Option<Atom>,
     pub local_name: Atom,
-    pub value: String,
+    pub value: Wtf8Buf,
 }
 
 impl Attribute {
     /// an attribute with a null namespace and prefix.
-    pub fn new(local_name: Atom, value: impl Into<String>) -> Attribute {
+    pub fn new(local_name: Atom, value: impl Into<Wtf8Buf>) -> Attribute {
         Attribute {
             namespace: None,
             prefix: None,
@@ -147,11 +148,11 @@ impl Element {
 
     /// the value of the attribute with this local name and a null
     /// namespace, which is how html attributes are stored.
-    pub fn attribute(&self, local_name: Atom) -> Option<&str> {
+    pub fn attribute(&self, local_name: Atom) -> Option<&Wtf8Buf> {
         self.attributes
             .iter()
             .find(|a| a.namespace.is_none() && a.local_name == local_name)
-            .map(|a| a.value.as_str())
+            .map(|a| &a.value)
     }
 
     pub fn has_attribute(&self, local_name: Atom) -> bool {
@@ -174,12 +175,12 @@ pub enum NodeData {
         host: Option<NodeId>,
     },
     Element(Element),
-    Text(String),
-    CdataSection(String),
-    Comment(String),
+    Text(Wtf8Buf),
+    CdataSection(Wtf8Buf),
+    Comment(Wtf8Buf),
     ProcessingInstruction {
         target: String,
-        data: String,
+        data: Wtf8Buf,
     },
 }
 
@@ -241,7 +242,7 @@ impl Node {
     }
 
     /// the data of a text, cdata section, comment or processing instruction.
-    pub fn character_data(&self) -> Option<&str> {
+    pub fn character_data(&self) -> Option<&Wtf8Buf> {
         match &self.data {
             NodeData::Text(s) | NodeData::CdataSection(s) | NodeData::Comment(s) => Some(s),
             NodeData::ProcessingInstruction { data, .. } => Some(data),
