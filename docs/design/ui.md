@@ -3,6 +3,8 @@
 ## chrome
 
 - drawn by sp_ui with vello in the browser process, using a small in-house widget set: tab strip, url bar, navigation buttons, menus, context menus, find bar, permission prompts, download shelf, dialogs (alert, confirm, prompt, beforeunload, http auth).
+- icons come from lucide (isc), vendored as svg with lucide's license file and drawn as vello strokes. no icon font.
+- the chrome is crisp and clean: edges, strokes and text pixel-snapped at the window's scale factor, consistent spacing, a restrained neutral palette, and hover, pressed and focus states on every control.
 - the chrome doesn't depend on the engine rendering correctly, so it works from m0 even while the engine renders garbage.
 - windowing and input through winit. ime events go to the focused renderer over ipc. accessibility through accesskit lands in m6 for both the chrome and the page tree.
 
