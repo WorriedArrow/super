@@ -6,6 +6,9 @@
 # disallowed-types only sees types written out, not inferred ones, so the std
 # functions that open or create these from a path, address or program name are
 # listed in disallowed-methods too.
+# so are the methods that point an existing socket at a path or address and the
+# ones that run an existing Command, in case one arrives without going through
+# a banned constructor.
 # std::os::unix and std::os::windows only exist on their own targets, so those
 # entries carry allow-invalid to keep the config valid on the other one.
 
@@ -26,6 +29,8 @@ disallowed-methods = [
     { path = "std::fs::remove_file", reason = "renderer crates do no filesystem i/o" },
     { path = "std::fs::rename", reason = "renderer crates do no filesystem i/o" },
     { path = "std::fs::set_permissions", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::set_times", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::set_times_nofollow", reason = "renderer crates do no filesystem i/o" },
     { path = "std::fs::soft_link", reason = "renderer crates do no filesystem i/o" },
     { path = "std::fs::symlink_metadata", reason = "renderer crates do no filesystem i/o" },
     { path = "std::fs::write", reason = "renderer crates do no filesystem i/o" },
@@ -64,10 +69,16 @@ disallowed-methods = [
     { path = "std::net::TcpStream::connect", reason = "renderer crates do no network i/o" },
     { path = "std::net::TcpStream::connect_timeout", reason = "renderer crates do no network i/o" },
     { path = "std::net::UdpSocket::bind", reason = "renderer crates do no network i/o" },
+    { path = "std::net::UdpSocket::connect", reason = "renderer crates do no network i/o" },
+    { path = "std::net::UdpSocket::send_to", reason = "renderer crates do no network i/o" },
     { path = "std::net::ToSocketAddrs::to_socket_addrs", reason = "renderer crates do no dns lookups" },
     { path = "std::os::unix::net::UnixDatagram::bind", reason = "renderer crates do no network i/o", allow-invalid = true },
     { path = "std::os::unix::net::UnixDatagram::bind_addr", reason = "renderer crates do no network i/o", allow-invalid = true },
+    { path = "std::os::unix::net::UnixDatagram::connect", reason = "renderer crates do no network i/o", allow-invalid = true },
+    { path = "std::os::unix::net::UnixDatagram::connect_addr", reason = "renderer crates do no network i/o", allow-invalid = true },
     { path = "std::os::unix::net::UnixDatagram::pair", reason = "renderer crates do no network i/o", allow-invalid = true },
+    { path = "std::os::unix::net::UnixDatagram::send_to", reason = "renderer crates do no network i/o", allow-invalid = true },
+    { path = "std::os::unix::net::UnixDatagram::send_to_addr", reason = "renderer crates do no network i/o", allow-invalid = true },
     { path = "std::os::unix::net::UnixDatagram::unbound", reason = "renderer crates do no network i/o", allow-invalid = true },
     { path = "std::os::unix::net::UnixListener::bind", reason = "renderer crates do no network i/o", allow-invalid = true },
     { path = "std::os::unix::net::UnixListener::bind_addr", reason = "renderer crates do no network i/o", allow-invalid = true },
@@ -75,6 +86,10 @@ disallowed-methods = [
     { path = "std::os::unix::net::UnixStream::connect_addr", reason = "renderer crates do no network i/o", allow-invalid = true },
     { path = "std::os::unix::net::UnixStream::pair", reason = "renderer crates do no network i/o", allow-invalid = true },
     { path = "std::process::Command::new", reason = "renderer crates don't start processes" },
+    { path = "std::process::Command::output", reason = "renderer crates don't start processes" },
+    { path = "std::process::Command::spawn", reason = "renderer crates don't start processes" },
+    { path = "std::process::Command::status", reason = "renderer crates don't start processes" },
+    { path = "std::os::unix::process::CommandExt::exec", reason = "renderer crates don't start processes", allow-invalid = true },
 ]
 
 disallowed-types = [
