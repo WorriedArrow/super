@@ -15,12 +15,12 @@ html parsing, dom, url parsing, css syntax and every css module, selectors, casc
 | windowing and input | winit, raw-window-handle, accesskit, accesskit_winit |
 | fonts and text | fontique, skrifa, read-fonts, harfrust, icu (icu4x components), unicode-bidi, encoding_rs |
 | images | png, zune-jpeg, image-webp, gif |
-| network | tokio, hyper, h2, quinn, h3, rustls, rustls-platform-verifier, hickory-resolver, brotli, flate2, zstd |
+| network | tokio, hyper, http, bytes, http-body-util, hyper-util, tokio-rustls, futures-util, h2, quinn, h3, rustls, rustls-platform-verifier, hickory-resolver, brotli, flate2, zstd |
 | storage | rusqlite (bundled sqlite) |
 | ipc and serialization | serde, postcard, memmap2 |
 | sandboxing | seccompiler, windows (the microsoft crate), nix |
 | general | rayon, crossbeam, parking_lot, smallvec, bitflags, thiserror, tracing, tracing-subscriber, arrayvec, hashbrown, bumpalo |
-| build and tooling | xshell, clap, toml, anyhow (xtask only), cargo-fuzz targets |
+| build and tooling | xshell, clap, toml, anyhow (xtask only), serde_json (xtask and test harnesses only, never linked into a shipped binary), cargo-fuzz targets |
 
 ## rules for any crate
 
