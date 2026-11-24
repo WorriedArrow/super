@@ -1,0 +1,18 @@
+[package]
+name = "sp_html"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+# the html5lib-tests tokenizer suite; prints pass/total per file. `cargo xtask html5lib`
+# runs it.
+[[test]]
+name = "html5lib_tokenizer"
+harness = false
