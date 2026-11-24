@@ -41,7 +41,7 @@ fn main() -> ExitCode {
     match Cli::parse().command {
         Cmd::Check => check(),
         Cmd::Wpt { .. } => unimplemented_command("wpt"),
-        Cmd::Html5lib => unimplemented_command("html5lib"),
+        Cmd::Html5lib => html5lib(),
         Cmd::Run { .. } => unimplemented_command("run"),
         Cmd::Headless { .. } => unimplemented_command("headless"),
         Cmd::Ladder => unimplemented_command("ladder"),
@@ -115,6 +115,24 @@ fn check() -> ExitCode {
         );
     }
     ExitCode::SUCCESS
+}
+
+/// Runs the sp_html html5lib-tests harnesses, which print pass/total per file.
+fn html5lib() -> ExitCode {
+    if !workspace_root()
+        .join("tests/html5lib-tests/tokenizer")
+        .is_dir()
+    {
+        eprintln!(
+            "tests/html5lib-tests is missing: git submodule update --init tests/html5lib-tests"
+        );
+        return ExitCode::FAILURE;
+    }
+    if run(&["test", "-p", "sp_html", "--test", "html5lib_tokenizer"]) {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    }
 }
 
 #[cfg(test)]
