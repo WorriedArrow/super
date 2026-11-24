@@ -10,6 +10,10 @@ publish = false
 
 [workspace.dependencies]
 clap = { version = "4", features = ["derive"] }
+gif = { version = "0.14", default-features = false, features = ["std"] }
+image-webp = "0.2"
+png = "0.18"
+zune-jpeg = "0.5"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

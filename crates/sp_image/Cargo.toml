@@ -7,3 +7,9 @@ publish.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+gif.workspace = true
+image-webp.workspace = true
+png.workspace = true
+zune-jpeg.workspace = true
