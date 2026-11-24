@@ -46,17 +46,24 @@ pub fn resolve_levels(text: &str, base: Option<Level>) -> BidiParagraph {
 /// characters removed by x9 from
 /// https://www.unicode.org/reports/tr9/#Retaining_Explicit_Formatting_Characters:
 /// they take part in the trailing whitespace sequences of l1.
+///
+/// returns an empty vector if `line` isn't a char-boundary range of `text`
+/// covered by `paragraph`.
 pub fn line_levels(text: &str, paragraph: &BidiParagraph, line: Range<usize>) -> Vec<Level> {
-    let mut levels = paragraph.levels[line.clone()].to_vec();
-    let para = paragraph.paragraph_level;
-    let Some(line_text) = text.get(line.clone()) else {
-        return levels;
+    let (Some(line_text), Some(levels), Some(classes)) = (
+        text.get(line.clone()),
+        paragraph.levels.get(line.clone()),
+        paragraph.original_classes.get(line.clone()),
+    ) else {
+        return Vec::new();
     };
+    let mut levels = levels.to_vec();
+    let para = paragraph.paragraph_level;
     // walking backwards, `trailing` is true while every character after the
     // current one up to the line end or the next s/b is whitespace-like.
     let mut trailing = true;
     for (offset, ch) in line_text.char_indices().rev() {
-        let class = paragraph.original_classes[line.start + offset];
+        let class = classes[offset];
         let reset = match class {
             // l1 items 1 and 2: segment and paragraph separators.
             BidiClass::S | BidiClass::B => {
@@ -174,6 +181,15 @@ mod tests {
         let para = resolve_levels(text, Some(Level::ltr()));
         let levels: Vec<Level> = text.char_indices().map(|(i, _)| para.levels[i]).collect();
         assert_eq!(reorder_visual(&levels), [0, 1, 3, 2, 4]);
+    }
+
+    #[test]
+    fn line_levels_rejects_bad_ranges() {
+        let text = "a\u{5d0}";
+        let para = resolve_levels(text, None);
+        // past the end, and inside the two-byte alef.
+        assert!(line_levels(text, &para, 0..10).is_empty());
+        assert!(line_levels(text, &para, 0..2).is_empty());
     }
 
     #[test]
