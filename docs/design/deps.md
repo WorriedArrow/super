@@ -25,6 +25,7 @@ html parsing, dom, url parsing, css syntax and every css module, selectors, casc
 ## rules for any crate
 
 - license compatible with mit or apache-2.0 distribution: mit, apache-2.0, bsd, isc, zlib, unicode, mpl-2.0. no gpl, lgpl or agpl. cargo-deny enforces it.
+- data vendored from web specs (for example the html standard's entities.json) may be cc by 4.0, with an attribution file next to the data naming the source, the author and the license. this covers data only, never code.
 - maintained: a release or commit within the last year, or small and finished.
 - one version per crate in the workspace where cargo allows it. cargo-deny warns on duplicates.
 - adding anything not in the table above goes through a design-change issue, and the owner approves it.
