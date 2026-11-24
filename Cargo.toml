@@ -10,6 +10,15 @@ publish = false
 
 [workspace.dependencies]
 clap = { version = "4", features = ["derive"] }
+fontique = { version = "0.13", default-features = false, features = ["system", "fontconfig-dlopen"] }
+harfrust = "0.15"
+icu_locale_core = "2.4"
+icu_properties = { version = "2.4", features = ["unicode_bidi"] }
+icu_segmenter = "2.4"
+read-fonts = "0.46"
+skrifa = "0.49"
+# pinned per the decision on #2; bump to 0.3.19 in its own pr.
+unicode-bidi = { version = "=0.3.18", default-features = false }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"
