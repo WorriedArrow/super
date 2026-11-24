@@ -1,0 +1,12 @@
+# site ladder, easy to hard. one url per line, # starts a comment.
+# rungs follow docs/design/testing.md.
+https://example.com/
+https://en.wikipedia.org/wiki/Web_browser
+https://news.ycombinator.com/
+https://github.com/rust-lang/rust
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array
+https://www.google.com/search?q=web+browser
+https://www.reddit.com/
+https://www.youtube.com/watch?v=jNQXAC9IVRw
+https://discord.com/login
+https://www.figma.com/

@@ -23,7 +23,35 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
+      # wpt has paths longer than windows' 260 character limit.
+      - name: allow long paths
+        if: runner.os == 'Windows'
+        run: git config --system core.longpaths true
       - uses: actions/checkout@v4
+      - name: check out html5lib-tests and css-parsing-tests
+        run: git submodule update --init --depth 1 tests/html5lib-tests tests/css-parsing-tests
+      - name: read pinned wpt commit
+        id: wpt
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD:tests/wpt)" >> "$GITHUB_OUTPUT"
+      # a shallow wpt checkout is large, so it's cached per pinned commit,
+      # git dir included so the submodule stays a normal checkout.
+      - name: restore wpt
+        id: wpt-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            tests/wpt
+            .git/modules/tests/wpt
+          key: wpt-${{ runner.os }}-${{ steps.wpt.outputs.sha }}
+      - name: check out wpt
+        if: steps.wpt-cache.outputs.cache-hit != 'true'
+        run: git submodule update --init --depth 1 tests/wpt
+      - name: register cached wpt
+        if: steps.wpt-cache.outputs.cache-hit == 'true'
+        run: git submodule init tests/wpt
+      - name: show pinned submodules
+        run: git submodule status
       - name: install toolchain from rust-toolchain.toml
         run: rustup toolchain install
       - uses: Swatinem/rust-cache@v2
