@@ -1,0 +1,46 @@
+# renderer-side crate: no filesystem or network access (agents/core.md).
+# all i/o goes through ipc to the browser or network process.
+# clippy reads the clippy.toml next to the crate's Cargo.toml, so this only
+# applies to the crates that carry a copy of it.
+
+disallowed-methods = [
+    { path = "std::fs::canonicalize", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::copy", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::create_dir", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::create_dir_all", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::exists", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::hard_link", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::metadata", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::read", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::read_dir", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::read_link", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::read_to_string", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::remove_dir", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::remove_dir_all", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::remove_file", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::rename", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::set_permissions", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::symlink_metadata", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::write", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::File::create", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::File::create_new", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::File::open", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::File::options", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::OpenOptions::new", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::net::TcpListener::bind", reason = "renderer crates do no network i/o" },
+    { path = "std::net::TcpStream::connect", reason = "renderer crates do no network i/o" },
+    { path = "std::net::TcpStream::connect_timeout", reason = "renderer crates do no network i/o" },
+    { path = "std::net::UdpSocket::bind", reason = "renderer crates do no network i/o" },
+    { path = "std::net::ToSocketAddrs::to_socket_addrs", reason = "renderer crates do no dns lookups" },
+]
+
+disallowed-types = [
+    { path = "std::fs::DirBuilder", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::DirEntry", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::File", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::OpenOptions", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::fs::ReadDir", reason = "renderer crates do no filesystem i/o" },
+    { path = "std::net::TcpListener", reason = "renderer crates do no network i/o" },
+    { path = "std::net::TcpStream", reason = "renderer crates do no network i/o" },
+    { path = "std::net::UdpSocket", reason = "renderer crates do no network i/o" },
+]
